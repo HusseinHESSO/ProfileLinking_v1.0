@@ -45,8 +45,8 @@ public class FacebookRetriever {
 		driver = new ChromeDriver();
 		driver.get("https://www.facebook.com/");
 		driver.findElement(By.name("email")).sendKeys(
-				"h.hazimeh@youssefhazimeh.com");
-		driver.findElement(By.name("pass")).sendKeys("Center12345678910");
+				"email");
+		driver.findElement(By.name("pass")).sendKeys("pass");
 		driver.findElement(By.id("loginbutton")).click();
 		for (int x = 0; x < accounts.length; x++) {
 
