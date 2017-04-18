@@ -43,7 +43,7 @@ public class ProfilerLinker_Events {
 		driver = new ChromeDriver();
 		get_profiles();
 
-		for (int i = 0; i < 30; i++) {
+		for (int i = 0; i < profiles.size(); i++) {
 			System.out.println("Profile name: " + profiles.get(i).screenname);
 			System.out.println("Events desc: " + profiles.get(i).events);
 
@@ -63,7 +63,7 @@ public class ProfilerLinker_Events {
 					.println("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
 		}
 		System.out.println("matched : " + matchedProfiles);
-		// count_twitter_bios();
+		
 
 	}
 
@@ -79,7 +79,7 @@ public class ProfilerLinker_Events {
 				String username = rs.getString("fb_screenname");
 				p.set_screenname(username);
 				p.set_ms(ids);
-				p.set_events(get_fb_bio_from_mysql(username));
+				p.set_events(get_fb_events_from_mysql(username));
 				profiles.add(p);
 			}
 			preparedStmt.close();
@@ -91,7 +91,7 @@ public class ProfilerLinker_Events {
 	}
 
 	/***************************** get facebook bio ***********************/
-	public static String get_fb_bio_from_mysql(String screenname) {
+	public static String get_fb_events_from_mysql(String screenname) {
 		String events = "*";
 		try {
 			String query = "select * from alldata where username like'%"
@@ -125,9 +125,6 @@ public class ProfilerLinker_Events {
 			for (int temp = 0; temp < nList.getLength(); temp++) {
 				Node nNode = nList.item(temp);
 				Element eElement = (Element) nNode;
-				// System.out.println("Student roll no : "+
-				// eElement.getAttribute("entity"));
-				// System.out.println("First Name : "+ nNode.getTextContent());
 				if (!(eElement.getAttribute("entity").equals("O")))
 					query += nNode.getTextContent() + " ";
 			}
@@ -136,37 +133,6 @@ public class ProfilerLinker_Events {
 		}
 		return query;
 	}
-
-	/***************************** count twitter bio ***********************/
-	public static void count_twitter_bios() {
-		String ids = "";
-		try {
-			String query = "select distinct(fb_screenname),tw_screennames,tw_ids from twitter_users";
-			PreparedStatement preparedStmt = (PreparedStatement) conn
-					.prepareStatement(query);
-			ResultSet rs = preparedStmt.executeQuery(query);
-			while (rs.next()) {
-				ids += rs.getString("tw_ids") + "-";
-			}
-			preparedStmt.close();
-
-		} catch (SQLException e) {
-			System.out.print(e.getMessage());
-		}
-		ids = ids + "@test";
-		for (int i = 0; i < ids.split("-").length; i++) {
-			String url = "https://twitter.com/" + ids.split("-")[i]
-					+ "?lang=en";
-			System.out.println(url);
-			driver.get(url);
-			WebElement desc = driver.findElement(By
-					.xpath(".//*[@class='ProfileHeaderCard-bio u-dir']"));
-			if (!(desc.getText().isEmpty())) {
-				j++;
-			}
-		}
-		System.out.println("size " + j);
-	}
 	/*****************************
 	 * search a twitter user timeline for a life event given from facebook
 	 * 
@@ -174,7 +140,7 @@ public class ProfilerLinker_Events {
 	 ***********************/
 	public static void searchTimeLine(String userid, String query)
 			throws IOException {
-
+		System.out.println("i am in search function "+query);
 		String url = "https://twitter.com/search?l=&q=" + query + "from%3A"
 				+ userid + "&src=typd&lang=en";
 		driver.get(url);
@@ -189,7 +155,7 @@ public class ProfilerLinker_Events {
 			
 		}
 		else {
-			file.write("fb_events :: " + query + "  user:: "
+			file.write("fb_events :: " + query.replace("%20", " ") + "  user:: "
 					+ userid + "\n");
 			file.flush();
 			for (int i = 0; i < e.size(); i++) {
@@ -198,7 +164,7 @@ public class ProfilerLinker_Events {
 		}
 	}
 
-	public static void Bio_matcher(String fb_bio, String tw_bio, String name)
+	public static void Event_matcher(String fb_bio, String tw_bio, String name)
 			throws IOException {
 
 		CosineSimilarity cs1 = new CosineSimilarity();
